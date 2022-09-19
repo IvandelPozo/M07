@@ -16,7 +16,7 @@
 
 			// Mètode d'encriptació OpenSSl
 			$iv_allargada = openssl_cipher_iv_length($xifrat);
-			$opcions   = 0;
+			$opcions = 0;
 			
 		
 			// [ENCRIPTACIÓ]
@@ -33,7 +33,6 @@
 
 			// [DESENCRIPTACIÓ]
 			
-
 			// Valors aleatoris de 16 dígits 
 			$decryption_iv = random_bytes($iv_allargada);
 
