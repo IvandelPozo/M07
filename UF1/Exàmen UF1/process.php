@@ -2,6 +2,15 @@
 session_start();
 
 /**
+ * Establiment timezone per defecte.
+ */
+date_default_timezone_set('Europe/Madrid');
+/**
+ * Establiment hora i data actual amb format específic.
+ */
+$horaIData = date('Y-m-d H:i:s', time());
+
+/**
  * Llegeix les dades del fitxer. Si el document no existeix torna un array buit.
  *
  * @param string $file
@@ -27,140 +36,131 @@ function escriu(array $dades, string $file): void
     file_put_contents($file,json_encode($dades, JSON_PRETTY_PRINT));
 }
 
-/*
-*
+/**
 *	Mètode POST i dades OK rebudes pels diversos formularis.
-*
 */
 
 $reboDades = ($_SERVER['REQUEST_METHOD'] == 'POST');
 $dadesOkRegistre = $reboDades && isset($_POST['RegistreNom']) && isset($_POST['RegistreCorreu']) && isset($_POST['RegistrePass']);
 $dadesOkLogin = $reboDades && isset($_POST['LoginCorreu']) && isset($_POST['LoginPass']);
 $dadesOkHola = $reboDades && isset($_POST['tancarSessio']);
-
-
+ 
 /**
+ * Redirecció a index.php en cas d'entrar de forma manual a process.php.
+ */
+
+ if(!$reboDades) {
+	header("Location: index.php", TRUE, 303); 
+ }
+
+
+ /**
  * 
- * Creació d'usuaris al Registre, si existeix el fitxer intenta afegir, si no, crea l'usuari.
+ * Creació d'usuaris al Registre. Si amb mètode POST, rebem les dades del formulari de registre, es comprova que el mateix
+ * correu no existeixi i que els camps estiguin tots emplenats del formulari, sinó, retorna error per $_GET. Si tot és correcte, 
+ * s'escriu al fitxer de connexions un "signup_success" i s'afegeixen variables de SESSIÓ per saber el nom d'usuari, correu i si 
+ * ha fet signIn. I la redirecció cap a hola.php, ja que la creació d'un nou usuari es considera una autentificació correcta.
  * 
  */
 
 if ($dadesOkRegistre) {
-	$llegirUsuaris = array();
-	$keyArray = array();
 
-	if (file_exists('users.json')) {
-		$llegirUsuaris = llegeix('users.json');
-		$keyArray = array_keys($llegirUsuaris);
-	
-		foreach ($llegirUsuaris as $key => $value) {
-			if($key == $_POST['RegistreCorreu']) {
-				header("Location: index.php?error=NOREGISTRE", TRUE, 303);
-				die();
-			} else {
-				$registrarUsuari = array( $_POST['RegistreCorreu'] => array("email" => $_POST['RegistreCorreu'], "password" => $_POST['RegistrePass'], "name" => $_POST['RegistreNom']));
-				$llegirUsuaris[implode($keyArray)] = $registrarUsuari;
-				escriu($registrarUsuari, 'users.json');
-				header("Location: index.php", TRUE, 302);
-				die();
-			}
-		}
+	$usuaris = llegeix('users.json');
+	$connexions = llegeix('connexions.json');
+	$keyArray = $_POST['RegistreCorreu'];
+
+	if (isset($usuaris[$keyArray])) {
+		header("Location: index.php?error=JAREGISTRAT", TRUE, 303);
+	} elseif($_POST['RegistreNom'] == "" || $_POST['RegistreCorreu'] == "" || $_POST['RegistrePass'] == "") {
+		header("Location: index.php?error=REGISTRENOVALID", TRUE, 303);
 	} else {
-		$registrarUsuari = array( $_POST['RegistreCorreu'] => array("email" => $_POST['RegistreCorreu'], "password" => $_POST['RegistrePass'], "name" => $_POST['RegistreNom']));
-		escriu($registrarUsuari, 'users.json');
-		header("Location: index.php", TRUE, 302);
-		die();
+		$nouUsuari = array("email" => $_POST['RegistreCorreu'], "password" => $_POST['RegistrePass'], "name" => $_POST['RegistreNom']);
+		$connNouRegistre = array("ip" => $_SERVER['REMOTE_ADDR'], "user" => $_POST['RegistreCorreu'], "time" => $horaIData, "status" => "signup_success");
+		
+		$usuaris[$keyArray] = $nouUsuari;
+
+		escriureConnexions($connNouRegistre);
+		escriu($usuaris, 'users.json');
+		
+		$_SESSION['nomUsuari'] = $_POST['RegistreNom'];
+		$_SESSION['correuUsuari'] = $_POST['RegistreCorreu'];
+		$_SESSION['signIn'] = "SI";
+		
+		header("Location: hola.php", TRUE, 302);
 	}
-	
 }
 
 /**
  * 
- * Validació de Login.
+ * Validació de Login. Comprova cada compte d'usuari registrat, si coincideix el correu amb la seva contrasenya, la validació
+ * serà exitosa afegint variables de SESSIÓ per saber el nom d'usuari, correu i si ha fet Sign In, en canvi, d'afegir un correu que 
+ * no existeixi o una contrasenya equivocada, enviarà error per $_GET i al fitxer de connexions.
  * 
  */
 
 if ($dadesOkLogin) {
-	$llegirUsuaris = array();
-	
-	if (file_exists('users.json')) {
-		$llegirUsuaris = llegeix('users.json');
-	}
 
-	foreach ($llegirUsuaris as $key => $value) {
-		if($key == $_POST['LoginCorreu'] && ($llegirUsuaris[$key]["password"]) == $_POST['LoginPass']) {
-			$_SESSION['nomUsuari'] = $llegirUsuaris[$key]["name"];
-			header("Location: hola.php", TRUE, 302);
-			die();
-		} else {
-			header("Location: index.php?error=NOLOGIN", TRUE, 303);
-			die();
-		}
+	$usuaris = llegeix('users.json');
+	$keyArray = $_POST['LoginCorreu'];
+	$passwordEntrada = $_POST['LoginPass'];
+	
+	foreach ($usuaris as $key=> $value) {
+		if($usuaris[$key]['email'] == $keyArray && $usuaris[$key]['password'] == $passwordEntrada) {
+			$correu = $usuaris[$key]['email'];
+			$pass = $usuaris[$key]['password'];
+			$nom = $usuaris[$key]['name'];
+		} 
 	}
+	
+	if (isset($usuaris[$keyArray])) {
+		if($correu == $keyArray && $pass == $passwordEntrada) {
+			
+			$_SESSION['nomUsuari'] = $nom;
+			$_SESSION['correuUsuari'] = $correu;
+			$_SESSION['signIn'] = "SI";
+			
+			$connNouLogin = array("ip" => $_SERVER['SERVER_ADDR'], "user" => $_SESSION['correuUsuari'], "time" => $horaIData, "status" => "signin_success");
+			escriureConnexions($connNouLogin);
+			header("Location: hola.php", TRUE, 302);
+		} else {
+			$connNouNoPass = array("ip" => $_SERVER['SERVER_ADDR'], "user" => $_POST['LoginCorreu'], "time" => $horaIData, "status" => "signin_password_error");
+			escriureConnexions($connNouNoPass);
+			header("Location: index.php?error=NOLOGINPASS", TRUE, 303);
+		}
+	} else {
+		$connNouNoCorreu = array("ip" => $_SERVER['SERVER_ADDR'], "user" => $_POST['LoginCorreu'], "time" => $horaIData, "status" => "signin_email_error");
+		escriureConnexions($connNouNoCorreu);
+		header("Location: index.php?error=NOLOGINCORREU", TRUE, 303);
+	}	
 }
 
 /**
  * 
- * Tancament de Sessió.
+ * Tancament de Sessió. Si el botó de tancar sessió es prem, s'envia un "logoff" al fitxer de connexions i
+ * s'elimina la sessió, i s'envia l'usuari a l'index.php.
  * 
  */
 
 if ($dadesOkHola) {
-	header("Location: index.php", TRUE, 302);
+
+	$connNouLogOff = array("ip" => $_SERVER['SERVER_ADDR'], "user" => $_SESSION['correuUsuari'], "time" => $horaIData, "status" => "logoff");
+	escriureConnexions($connNouLogOff);
+	
 	session_destroy();
-	die();
+	header("Location: index.php", TRUE, 302);
 }
 
+/**
+ * Donat un array amb informació de signup_success, signin_success, signin_password_error, signin_email_error o logoff,
+ * llegeix el fitxer de connexions i afegeix la informació del fitxer connexions i l'array actual, en un array i el guarda de nou a 
+ * connexions.json cridant la funció escriu().
+ *
+ * @param array $connNoves
+ */
 
-
-/*
-$llegirUsuaris = llegeix('users.json');
-$keyArray = array_keys($llegirUsuaris);
-
-$registrarUsuari = array( 'test@test.cat' => array("email" => 'test@test.cat', "password" => '1234', "name" => 'nom'));
-
-$llegirUsuaris[] = $registrarUsuari;
-
-print_r($llegirUsuaris);
-escriu($llegirUsuaris, 'hola.json');
-
-foreach ($llegirUsuaris as $key => $value) {
-	if($key == "gtest@gmail.cat") {
-		echo "si";
-	} else {
-		echo "no";
-	}
-}
-*/
-
-/*
-
-
-		$llegirUsuaris = llegeix('users.json');
-		$obtenirCorreu = $llegirUsuaris;
-
-		print_r($obtenirCorreu);
-		
-		
-		$llegirUsuaris = llegeix('users.json');
-		$keyArray = array_keys($llegirUsuaris);
-*/
-/*
-$test = llegeix('users.json');
-print_r($test);
-print_r(array_keys($test));
-
-
-if (array_key_exists('test@gmail.cat', $test)) {
-	echo "ya creada";
-} else {
-	echo "es pot crear";
-}
-
-if (file_exists('users.json')) {
-	echo "yes";
-} else {
-echo "no";
-}
-*/	
+function escriureConnexions(array $connNoves): void {
+	$connexions = llegeix('connexions.json');
+	$connexions[] = $connNoves;
+	escriu($connexions, 'connexions.json');
+}	
 ?>

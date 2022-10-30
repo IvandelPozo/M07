@@ -1,3 +1,32 @@
+<?php
+session_start();
+
+/**
+ * Funció que redirigeix a la pàgina hola.php si el temps actual és més petit que el donat pel timer
+ * afegit de la pàgina hola.php per SESSIÓ.
+ * 
+ */
+
+function redireccioSignIn(): void {
+	
+	if(isset($_SESSION['alCapMinut'])) {
+		if(time() < $_SESSION['alCapMinut']) {
+			header("Location: hola.php", TRUE, 302);
+		}
+	}
+}
+
+/**
+ * Si aquesta SESSIÓ conté "SI" rebut del Inici de Sessió o Registre de forma exitosa, ens redirigeix a 
+ * hola.php cridant la funció redireccioSignIn(), ja que a hola.php, també s'afegeix el timer.
+ */
+
+if(isset($_SESSION['signIn'])) {
+	if($_SESSION['signIn'] == "SI") {
+		redireccioSignIn();
+	}
+}
+?>
 <!DOCTYPE html>
 <html lang="ca">
 <head>
@@ -18,12 +47,20 @@
 			$error = $_GET['error'];
 		
 			switch ($error) {
-				case "NOREGISTRE":
-					echo '<div><p id="errors">Usuari Registrat</p></div>';
+				case "REGISTRENOVALID":
+					echo '<div><p id="errors">Falten camps per emplenar!</p></div>';
 					echo '<style>#errors{visibility: visible !important;}</style>';
-					break;
-				case "NOLOGIN":
-					echo '<div><p id="errors">Login Incorrecte</p></div>';
+					break;	
+				case "JAREGISTRAT":
+					echo '<div><p id="errors">Usuari ja registrat!</p></div>';
+					echo '<style>#errors{visibility: visible !important;}</style>';
+					break;					
+				case "NOLOGINCORREU":
+					echo '<div><p id="errors">Correu incorrecte!</p></div>';
+					echo '<style>#errors{visibility: visible !important;}</style>';
+					break;				
+				case "NOLOGINPASS":
+					echo '<div><p id="errors">Contrasenya incorrecte!</p></div>';
 					echo '<style>#errors{visibility: visible !important;}</style>';
 					break;						
 			}
