@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-11-2022 a las 16:49:34
+-- Tiempo de generación: 10-11-2022 a las 18:35:20
 -- Versión del servidor: 10.4.25-MariaDB
 -- Versión de PHP: 8.1.10
 
@@ -20,6 +20,8 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `dwes-ivandelpozo-autpdo`
 --
+CREATE DATABASE IF NOT EXISTS `dwes-ivandelpozo-autpdo` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `dwes-ivandelpozo-autpdo`;
 
 -- --------------------------------------------------------
 
@@ -53,7 +55,8 @@ INSERT INTO `connections` (`ip`, `user`, `time`, `status`) VALUES
 ('::1', 'test@test.cat', '2022-11-06 16:45:55', 'signin_email_error'),
 ('::1', 'idelpozo@boscdelacoma.cat', '2022-11-06 16:46:20', 'signin_success'),
 ('::1', 'idelpozo@boscdelacoma.cat', '2022-11-06 16:46:21', 'logoff'),
-('::1', 'idelpozo@boscdelacoma.cat', '2022-11-06 16:46:28', 'signin_password_error');
+('::1', 'idelpozo@boscdelacoma.cat', '2022-11-06 16:46:28', 'signin_password_error'),
+('::1', 'idelpozo@boscdelacoma.cat', '2022-11-07 15:26:55', 'signin_success');
 
 -- --------------------------------------------------------
 
