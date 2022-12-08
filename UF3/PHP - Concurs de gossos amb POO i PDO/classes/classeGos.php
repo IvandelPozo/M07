@@ -217,8 +217,8 @@ class Gos
 
         if (!$connexio) return false;
 
-        $sentencia = $connexio->prepare("INSERT INTO concursantfase (`id_concursant`, `numero_fase`) VALUES(?,?)");
-        return $sentencia->execute(array($idConcursant, $numFase));
+        $sentencia = $connexio->prepare("INSERT INTO concursantfase (`id_concursant`, `numero_fase`, `percentatge`, `eliminat`) VALUES(?,?,?,?)");
+        return $sentencia->execute(array($idConcursant, $numFase, 0,0));
     }
 
     /**
