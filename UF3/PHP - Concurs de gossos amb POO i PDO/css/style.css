@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+body{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #eebf65;
+}
+::selection{
+    color: #fff;
+    background: #eebf65;
+}
+.wrapper{
+    background: #fff;
+    border-radius: 15px;
+    padding: 25px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0px 5px 10px rgba(0,0,0,0.1);
+}
+
+.large{
+    max-width: 90%;
+}
+
+.medium{
+    max-width: 900px;
+}
+.wrapper header{
+    font-size: 22px;
+    font-weight: 600;
+    text-align: center;
+}
+.wrapper .poll-area{
+    margin: 20px 0 15px 0;
+}
+.poll-area label{
+    display: block;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    padding: 8px 15px;
+    border: 2px solid #e6e6e6;
+    transition: all 0.2s ease;
+}
+.poll-area label:hover{
+    border-color: #ddd;
+}
+label.selected{
+    border-color: #eebf65!important;
+}
+label .row{
+    display: flex;
+    pointer-events: none;
+    justify-content: space-between;
+}
+label .row .column{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+label .row .column .right{
+    display: flex;
+
+}
+label .row .circle{
+    height: 19px;
+    width: 19px;
+    display: block;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    margin-right: 10px;
+    position: relative;
+}
+label.selected .row .circle{
+    border-color: #eebf65;
+}
+label .row .circle::after{
+    content: "";
+    height: 11px;
+    width: 11px;
+    background: #eebf65;
+    border-radius: inherit;
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    display: none;
+}
+.poll-area label:hover .row .circle::after{
+    display: block;
+    background: #e6e6e6;
+}
+label.selected .row .circle::after{
+    display: block;
+    background: #eebf65!important;
+}
+label .row span{
+    font-size: 16px;
+    font-weight: 500;
+}
+label .row .percent{
+    display: none;
+}
+label .progress{
+    height: 7px;
+    width: 100%;
+    position: relative;
+    background: #f0f0f0;
+    margin: 8px 0 3px 0;
+    border-radius: 30px;
+    display: none;
+    pointer-events: none;
+}
+label .progress:after{
+    position: absolute;
+    content: "";
+    height: 100%;
+    background: #ccc;
+    width: calc(1% * var(--w));
+    border-radius: inherit;
+    transition: all 0.2s ease;
+}
+label.selected .progress::after{
+    background: #eebf65;
+}
+label.selectall .progress,
+label.selectall .row .percent{
+    display: block;
+}
+input[type="radio"],
+input[type="checkbox"]{
+    display: none;
+}
+.dog{
+    width: 50px;
+    height: 50px;
+}
+
+.eliminat{
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+    opacity: 32%;
+}
+
+.results {
+    text-align: center;
+}
+.results h1{
+    font-size: 17px;
+    font-weight: 400;
+}
+
+.admin h1{
+    font-size: 17px;
+    font-weight: 600;
+    margin: 10px;
+}
+
+
+
+.info, .warning{
+    font-size: smaller;
+    text-align: center;
+}
+
+.warning{
+    margin-top: 10px;
+    color: red;
+}
+.admin-row{
+    margin: 25px 10px;
+    font-size: small;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+ #login-align {
+    text-align: center;
+}
+
+#green-alert {
+    background-color: #bbedbb;
+    border: 2px solid green;
+    padding: 2px;
+    font-size: 12px;
+    text-align: center;
+}
+
+#gray-alert {
+    background-color: #e7e7e7;
+    border: 2px solid gray;
+    padding: 2px;
+    font-size: 12px;
+    text-align: center;
+}
+
+#red-alert {
+    background-color: #ffa7a7;
+    border: 2px solid red;
+    padding: 2px;
+    font-size: 12px;
+    text-align: center;
+}
+
+#message {
+    background-color: #ffeaa7;
+    border: 2px solid orange;
+    padding: 2px;
+    font-size: 12px;
+    text-align: center;
+}
