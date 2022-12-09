@@ -59,8 +59,8 @@ class Gos
         if (!$connexio) return false;
 
         $sentencia = $connexio->prepare("SELECT `id`, `nom`, `imatge`, `amo`, `raça` FROM concursant 
-        INNER JOIN concursantFase on concursant.id = concursantFase.ID_CONCURSANT 
-        INNER JOIN fase ON concursantFase.NUMERO_FASE = fase.NUMERO 
+        INNER JOIN concursantfase on concursant.id = concursantfase.ID_CONCURSANT 
+        INNER JOIN fase ON concursantfase.NUMERO_FASE = fase.NUMERO 
         WHERE ? BETWEEN fase.DATAINICI AND fase.DATAFI");
 
         $sentencia->execute(array($data));
