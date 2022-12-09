@@ -236,9 +236,9 @@ class Gos
         if (!$connexio) return false;
 
         $sentencia = $connexio->prepare("SELECT `id`, `nom`, `imatge`, `amo`, `raça` FROM concursant 
-        INNER JOIN concursantFase on concursant.id = concursantFase.ID_CONCURSANT 
-        INNER JOIN fase ON concursantFase.NUMERO_FASE = fase.NUMERO 
-        WHERE concursantFase.NUMERO_FASE= ?");
+        INNER JOIN concursantfase on concursant.id = concursantfase.ID_CONCURSANT 
+        INNER JOIN fase ON concursantfase.NUMERO_FASE = fase.NUMERO 
+        WHERE concursantfase.NUMERO_FASE= ?");
 
         $sentencia->execute(array($numFase));
         $sentencia->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, 'Gos');
