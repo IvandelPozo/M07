@@ -7,6 +7,7 @@ if (!defined('WP_UNINSTALL_PLUGIN'))
     exit();
 
 // remove plugin options
+delete_option('facelog_options');
 
 // delete database table
 facelog_dbdelete();
