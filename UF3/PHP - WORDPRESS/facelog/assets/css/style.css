@@ -1,0 +1,46 @@
+.facelog_gallery{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.facelog_box .info{
+    margin: -50px 0px 0px 20px;
+    color: white;
+}
+
+.facelog_upload{
+    display: flex;
+    justify-content: center;
+}
+
+.facelog_form .clear-input{
+    border-bottom-width: 0;
+}
+
+.facelog_form .inline-input{
+    width: 120px;
+    font-style: normal;
+    height: auto;
+    padding: 0;
+    font-size: unset;
+}
+
+.facelog_form .facelog_date{
+    display: flex;
+    justify-content: center;
+}
+.facelog_form .facelog_date *, .facelog_form, .facelog_form *{
+    margin: 5px;
+}
+
+.facelog_message{
+    display: flex;
+    justify-content: center;
+}
+.facelog_message .error{
+    color: darkred;
+}
+
+.facelog_message .ok{
+    color: darkgreen;
+}
