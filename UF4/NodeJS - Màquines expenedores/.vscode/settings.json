@@ -1,0 +1,10 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "Expenedora",
+            "database": "${workspaceFolder:NodeJS - Màquines expenedores}/Maquines-Expenedores-Api/database.sqlite"
+        }
+    ]
+}
