@@ -1,2 +1,97 @@
 {
+  "tasques": [
+    {
+      "titol": "666",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "8888",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "003444",
+      "usuaris": [
+        "alexphpbdc@gmail.com",
+        "minecraftalmike@gmail.com"
+      ]
+    },
+    {
+      "titol": "0003",
+      "usuaris": [
+        "alexphpbdc@gmail.com",
+        "minecraftalmike@gmail.com"
+      ]
+    },
+    {
+      "titol": "OO",
+      "usuaris": [
+        "alexphpbdc@gmail.com",
+        "minecraftalmike@gmail.com"
+      ]
+    },
+    {
+      "titol": "Kuku",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "Koko",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "Mij",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "LOL",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "SF",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "SDD",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "tatt",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "Tarea 4",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "Tarea 3",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    },
+    {
+      "titol": "Tarea 2",
+      "usuaris": [
+        "alexphpbdc@gmail.com"
+      ]
+    }
+  ]
 }

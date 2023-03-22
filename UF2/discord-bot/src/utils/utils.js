@@ -39,14 +39,33 @@ function escriureDataJson(data, nomFitxer) {
 
 /**
  * Afegeix o Actualitza el fitxer JSON de configuració
- * @param {string} data 
+ * @param {Object} servers 
  */
 
-function escriureConfigJson(data) {
+function escriureConfigJson(servers) {
+    const jsonFilePath = './config.json';
+    let jsonData = {};
 
-    fs.writeFile('./config.json', JSON.stringify(data), (err) => {
-        if (err) throw err;
-        debug('Configuració Actualitzada!');
+    try {
+    
+        const fileData = fs.readFileSync(jsonFilePath, 'utf8');
+        jsonData = JSON.parse(fileData);
+    } catch (error) {
+        debug('No es pot llegir el fitxer JSON:', error.message);
+    }
+
+    // Actualizar objecte JSON
+    jsonData.servers = {
+        ...(jsonData.servers || {}),
+        ...servers,
+    };
+
+    fs.writeFile(jsonFilePath, JSON.stringify(jsonData), (err) => {
+        if (err) {
+            debug('Error al guardar JSON:', err.message);
+        } else {
+            debug('Configuració Actualitzada!');
+        }
     });
 }
 
@@ -172,60 +191,71 @@ const dadesAnteriors = { tasques: [] };
 async function comprovarCanvisTasques(client) {
     const { authorize, getTasquesNoCompletades } = require('../classroom.js');
 
-    if (config["CHANNEL_ID"] != "") {
+    // Llegir el fitxer config.json
+    const rawConfig = fs.readFileSync('./config.json');
+    const conf = JSON.parse(rawConfig);
 
-        authorize().then(getTasquesNoCompletades).catch(debug);
-        debug('Comprovant canvis...');
+    if (conf['servers']) {
+        for (const serverKey in conf['servers']) {
+            const server = conf['servers'][serverKey];
 
-        try {
-            const dades = await fs.promises.readFile('src/jsonDB/data.json');
-            const dadesNoves = { tasques: [] };
-            let jsonData;
+            // Actualizar el valor del CHANNEL_ID según sea necesario
+            const channelId = server['CHANNEL_ID'];
+
+
+            authorize().then(getTasquesNoCompletades).catch(debug);
+            debug('Comprovant canvis...');
 
             try {
-                jsonData = JSON.parse(dades);
-            } catch (err) {
-                debug(`Sense dades al fitxer 'data.json'`);
-                return;
-            }
+                const dades = await fs.promises.readFile('src/jsonDB/data.json');
+                const dadesNoves = { tasques: [] };
+                let jsonData;
 
-            // Comprova tasques noves i nous usuaris a tasques existents
-
-            for (const tasca of jsonData.tasques) {
-                const tascaAnterior = dadesAnteriors.tasques.find((t) => t.titol === tasca.titol) || {};
-
-                if (!tascaAnterior.hasOwnProperty('titol')) {
-                    debug(`Nova tasca afegida: ${tasca.titol} amb usuaris: ${tasca.usuaris}`);
-                    dadesNoves.tasques.push({ titol: tasca.titol, usuaris: tasca.usuaris });
-                    embedEntreguesPendents(client, config.CHANNEL_ID, tasca.titol, tasca.usuaris);
-                } else {
-                    const usuarisEliminats = tascaAnterior.usuaris.filter((u) => !tasca.usuaris.includes(u));
-                    const usuarisRestants = tascaAnterior.usuaris.filter((u) => !usuarisEliminats.includes(u));
-
-                    if (usuarisEliminats.length > 0) {
-                        debug(`Usuari/s eliminat/s de la tasca '${tasca.titol}', usuaris restants: ${usuarisRestants}`);
-                        dadesNoves.tasques.push({ titol: tasca.titol, usuaris: usuarisRestants });
-                        embedEntreguesPendents(client, config.CHANNEL_ID, tasca.titol, usuarisRestants);
-                    } else {
-                        // Comprova nous usuaris afegits
-
-                        const nousUsuaris = tasca.usuaris.filter((u) => !tascaAnterior.usuaris.includes(u));
-                        if (nousUsuaris.length > 0) {
-                            debug(`Nou/s usuari/s afegit/s a la tasca '${tasca.titol}': ${nousUsuaris}`);
-                            dadesNoves.tasques.push({ titol: tasca.titol, usuaris: tasca.usuaris });
-                            embedEntreguesPendents(client, config.CHANNEL_ID, tasca.titol, tasca.usuaris);
-                        } else {
-                            dadesNoves.tasques.push(tascaAnterior);
-                        }
-                    }
-
+                try {
+                    jsonData = JSON.parse(dades);
+                } catch (err) {
+                    debug(`Sense dades al fitxer 'data.json'`);
+                    return;
                 }
+
+                // Comprova tasques noves i nous usuaris a tasques existents
+
+                for (const tasca of jsonData.tasques) {
+                    const tascaAnterior = dadesAnteriors.tasques.find((t) => t.titol === tasca.titol) || {};
+
+                    if (!tascaAnterior.hasOwnProperty('titol')) {
+                        debug(`Nova tasca afegida: ${tasca.titol} amb usuaris: ${tasca.usuaris}`);
+                        dadesNoves.tasques.push({ titol: tasca.titol, usuaris: tasca.usuaris });
+                        embedEntreguesPendents(client, channelId, tasca.titol, tasca.usuaris);
+                    } else {
+                        const usuarisEliminats = tascaAnterior.usuaris.filter((u) => !tasca.usuaris.includes(u));
+                        const usuarisRestants = tascaAnterior.usuaris.filter((u) => !usuarisEliminats.includes(u));
+
+                        if (usuarisEliminats.length > 0) {
+                            debug(`Usuari/s eliminat/s de la tasca '${tasca.titol}', usuaris restants: ${usuarisRestants}`);
+                            dadesNoves.tasques.push({ titol: tasca.titol, usuaris: usuarisRestants });
+                            embedEntreguesPendents(client, channelId, tasca.titol, usuarisRestants);
+                        } else {
+                            // Comprova nous usuaris afegits
+
+                            const nousUsuaris = tasca.usuaris.filter((u) => !tascaAnterior.usuaris.includes(u));
+                            if (nousUsuaris.length > 0) {
+                                debug(`Nou/s usuari/s afegit/s a la tasca '${tasca.titol}': ${nousUsuaris}`);
+                                dadesNoves.tasques.push({ titol: tasca.titol, usuaris: tasca.usuaris });
+                                embedEntreguesPendents(client, channelId, tasca.titol, tasca.usuaris);
+                            } else {
+                                dadesNoves.tasques.push(tascaAnterior);
+                            }
+                        }
+
+                    }
+                }
+
+                dadesAnteriors.tasques = dadesNoves.tasques;
+
+            } catch (err) {
+                debug(err);
             }
-
-            dadesAnteriors.tasques = dadesNoves.tasques;
-
-        } catch (err) {
-            debug(err);
         }
     } else {
         debug('No hi ha cap canal definit per enviar els missatges.');
@@ -302,9 +332,9 @@ function addCommands(client) {
 module.exports = {
     escriureDataJson,
     escriureConfigJson,
-    escriureDataUsersDiscordJson,
+    escriureDataUsersDiscordJson,    
+    escriureCorreusDataUsersDiscordJson,
     comprovarCanvisTasques,
     addCommands,
-    enviarNota,
-    escriureCorreusDataUsersDiscordJson
+    enviarNota
 };

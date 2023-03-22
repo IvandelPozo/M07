@@ -1,5 +1,5 @@
 const { Client, GatewayIntentBits } = require("discord.js");
-const config = require("../config.json");
+let config = require("../config.json");
 const { authorize, getTasquesNoCompletades, getQualificacio } = require('./classroom.js');
 const { escriureConfigJson, escriureCorreusDataUsersDiscordJson, comprovarCanvisTasques, addCommands } = require('./utils/utils.js');
 var debug = require('debug')('bot');
@@ -43,7 +43,7 @@ client.on("ready", () => {
 
 process.on('uncaughtException', (error) => {
     debug(error);
-  });
+});
 
 /**
  * Esdeveniment que s'activa quan es reben comandes pel chat
@@ -55,28 +55,43 @@ client.on('interactionCreate', async (interaction) => {
 
     let data = {};
 
-    // Llegir JSON
+    // Llegir JSON dataUsersDiscord
 
     let dadesUsuaris = fs.readFileSync('./src/jsonDB/dataUsersDiscord.json');
     if (dadesUsuaris.length > 0) {
         data = JSON.parse(dadesUsuaris);
     }
 
+    // Llegir JSON config
+
+    const rawConfig = fs.readFileSync('./config.json');
+    const conf = JSON.parse(rawConfig);
+
     // Definició de comandes
 
     if (interaction.isChatInputCommand()) {
 
+        // SETUP
+
         if (interaction.commandName == 'setup') {
 
-            config['CHANNEL_ID'] = interaction.channel.id;
-            escriureConfigJson(config);
+            const nousServidors = {
+                [interaction.guild.id]: {
+                    CHANNEL_ID: interaction.channel.id,
+                },
+            };
+
+            escriureConfigJson(nousServidors);
 
             await interaction.reply({
                 content: '>>> Canal d\'informació de Classroom establert!',
             });
+
+        // TASQUES PENDENTS
+
         } else if (interaction.commandName == 'tasquespendents') {
 
-            if (config['CHANNEL_ID'] == "") {
+            if (!conf['servers'][interaction.guild.id]) {
                 await interaction.reply({
                     content: '>>> Defineix un canal de setup...',
                 });
@@ -89,6 +104,8 @@ client.on('interactionCreate', async (interaction) => {
                     content: '>>> Cercant tasques pendents...',
                 });
             }
+
+        // ESTABLIR CORREU
 
         } else if (interaction.commandName == 'establircorreu') {
             const memberId = interaction.user.id;
@@ -106,6 +123,9 @@ client.on('interactionCreate', async (interaction) => {
             await interaction.reply({
                 content: '>>> Email registrat correctament!',
             });
+
+        // QUALIFICACIONS
+
         } else if (interaction.commandName == 'qualificacions') {
 
             authorize().then((auth) => {
@@ -123,6 +143,6 @@ client.on('interactionCreate', async (interaction) => {
 
 client.login(config.BOT_TOKEN);
 
-// Comprovació de tasques pendents cada 5 segons
-setInterval(() => comprovarCanvisTasques(client), 90 * 1000);
-setInterval(() => authorize().then((auth) => { getQualificacio(auth, client) }).catch(debug), 90 * 1000);
+// Comprovació de tasques pendents cada 1 hora
+setInterval(() => comprovarCanvisTasques(client), 60 * 60 * 1000);
+setInterval(() => authorize().then((auth) => { getQualificacio(auth, client) }).catch(debug), 60 * 60 * 1000);
