@@ -144,5 +144,5 @@ client.on('interactionCreate', async (interaction) => {
 client.login(config.BOT_TOKEN);
 
 // Comprovació de tasques pendents cada 1 hora
-setInterval(() => comprovarCanvisTasques(client), 60 * 60 * 1000);
+setInterval(() => comprovarCanvisTasques(client), 4 * 1000);
 setInterval(() => authorize().then((auth) => { getQualificacio(auth, client) }).catch(debug), 60 * 60 * 1000);

@@ -204,6 +204,10 @@ async function comprovarCanvisTasques(client) {
             debug('Comprovant canvis...');
 
             try {
+
+                // Espera de 5 segons per a que es pugui llegir el fitxer 'data.json'
+                await new Promise(resolve => setTimeout(resolve, 5000));
+
                 const dades = await fs.promises.readFile('src/jsonDB/data.json');
                 const dadesNoves = { tasques: [] };
                 let jsonData;
