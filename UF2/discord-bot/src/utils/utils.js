@@ -1,6 +1,5 @@
 const fs = require('fs');
 const { EmbedBuilder } = require("discord.js");
-const config = require("../../config.json");
 var debug = require('debug')('utils');
 
 /**  GUARDAR JSON  **/
@@ -47,7 +46,7 @@ function escriureConfigJson(servers) {
     let jsonData = {};
 
     try {
-    
+
         const fileData = fs.readFileSync(jsonFilePath, 'utf8');
         jsonData = JSON.parse(fileData);
     } catch (error) {
@@ -175,7 +174,6 @@ async function embedNota(tasca, nom, nota) {
     return embedClassroom;
 }
 
-
 /**  FUNCIONS PER SETINTERVAL  **/
 
 /**
@@ -196,12 +194,11 @@ async function comprovarCanvisTasques(client) {
     const conf = JSON.parse(rawConfig);
 
     if (conf['servers']) {
-        for (const serverKey in conf['servers']) {
-            const server = conf['servers'][serverKey];
+        for (let serverKey in conf['servers']) {
+            let server = conf['servers'][serverKey];
 
-            // Actualizar el valor del CHANNEL_ID según sea necesario
-            const channelId = server['CHANNEL_ID'];
-
+            // Actualitzar el valor del CHANNEL_ID
+            let channelId = server['CHANNEL_ID'];
 
             authorize().then(getTasquesNoCompletades).catch(debug);
             debug('Comprovant canvis...');
@@ -220,8 +217,8 @@ async function comprovarCanvisTasques(client) {
 
                 // Comprova tasques noves i nous usuaris a tasques existents
 
-                for (const tasca of jsonData.tasques) {
-                    const tascaAnterior = dadesAnteriors.tasques.find((t) => t.titol === tasca.titol) || {};
+                for (let tasca of jsonData.tasques) {
+                    let tascaAnterior = dadesAnteriors.tasques.find((t) => t.titol === tasca.titol) || {};
 
                     if (!tascaAnterior.hasOwnProperty('titol')) {
                         debug(`Nova tasca afegida: ${tasca.titol} amb usuaris: ${tasca.usuaris}`);
@@ -332,7 +329,7 @@ function addCommands(client) {
 module.exports = {
     escriureDataJson,
     escriureConfigJson,
-    escriureDataUsersDiscordJson,    
+    escriureDataUsersDiscordJson,
     escriureCorreusDataUsersDiscordJson,
     comprovarCanvisTasques,
     addCommands,
