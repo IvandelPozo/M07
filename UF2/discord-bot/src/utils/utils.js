@@ -221,35 +221,40 @@ async function comprovarCanvisTasques(client) {
 
                 // Comprova tasques noves i nous usuaris a tasques existents
 
-                for (let tasca of jsonData.tasques) {
-                    let tascaAnterior = dadesAnteriors.tasques.find((t) => t.titol === tasca.titol) || {};
+                if (jsonData.tasques) {
 
-                    if (!tascaAnterior.hasOwnProperty('titol')) {
-                        debug(`Nova tasca afegida: ${tasca.titol} amb usuaris: ${tasca.usuaris}`);
-                        dadesNoves.tasques.push({ titol: tasca.titol, usuaris: tasca.usuaris });
-                        embedEntreguesPendents(client, channelId, tasca.titol, tasca.usuaris);
-                    } else {
-                        const usuarisEliminats = tascaAnterior.usuaris.filter((u) => !tasca.usuaris.includes(u));
-                        const usuarisRestants = tascaAnterior.usuaris.filter((u) => !usuarisEliminats.includes(u));
+                    for (let tasca of jsonData.tasques) {
+                        let tascaAnterior = dadesAnteriors.tasques.find((t) => t.titol === tasca.titol) || {};
 
-                        if (usuarisEliminats.length > 0) {
-                            debug(`Usuari/s eliminat/s de la tasca '${tasca.titol}', usuaris restants: ${usuarisRestants}`);
-                            dadesNoves.tasques.push({ titol: tasca.titol, usuaris: usuarisRestants });
-                            embedEntreguesPendents(client, channelId, tasca.titol, usuarisRestants);
+                        if (!tascaAnterior.hasOwnProperty('titol')) {
+                            debug(`Nova tasca afegida: ${tasca.titol} amb usuaris: ${tasca.usuaris}`);
+                            dadesNoves.tasques.push({ titol: tasca.titol, usuaris: tasca.usuaris });
+                            embedEntreguesPendents(client, channelId, tasca.titol, tasca.usuaris);
                         } else {
-                            // Comprova nous usuaris afegits
+                            const usuarisEliminats = tascaAnterior.usuaris.filter((u) => !tasca.usuaris.includes(u));
+                            const usuarisRestants = tascaAnterior.usuaris.filter((u) => !usuarisEliminats.includes(u));
 
-                            const nousUsuaris = tasca.usuaris.filter((u) => !tascaAnterior.usuaris.includes(u));
-                            if (nousUsuaris.length > 0) {
-                                debug(`Nou/s usuari/s afegit/s a la tasca '${tasca.titol}': ${nousUsuaris}`);
-                                dadesNoves.tasques.push({ titol: tasca.titol, usuaris: tasca.usuaris });
-                                embedEntreguesPendents(client, channelId, tasca.titol, tasca.usuaris);
+                            if (usuarisEliminats.length > 0) {
+                                debug(`Usuari/s eliminat/s de la tasca '${tasca.titol}', usuaris restants: ${usuarisRestants}`);
+                                dadesNoves.tasques.push({ titol: tasca.titol, usuaris: usuarisRestants });
+                                embedEntreguesPendents(client, channelId, tasca.titol, usuarisRestants);
                             } else {
-                                dadesNoves.tasques.push(tascaAnterior);
-                            }
-                        }
+                                // Comprova nous usuaris afegits
 
+                                const nousUsuaris = tasca.usuaris.filter((u) => !tascaAnterior.usuaris.includes(u));
+                                if (nousUsuaris.length > 0) {
+                                    debug(`Nou/s usuari/s afegit/s a la tasca '${tasca.titol}': ${nousUsuaris}`);
+                                    dadesNoves.tasques.push({ titol: tasca.titol, usuaris: tasca.usuaris });
+                                    embedEntreguesPendents(client, channelId, tasca.titol, tasca.usuaris);
+                                } else {
+                                    dadesNoves.tasques.push(tascaAnterior);
+                                }
+                            }
+
+                        }
                     }
+                } else {
+                    debug('No hi ha tasques pendents.');
                 }
 
                 dadesAnteriors.tasques = dadesNoves.tasques;
