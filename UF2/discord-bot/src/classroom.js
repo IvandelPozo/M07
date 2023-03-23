@@ -133,36 +133,42 @@ async function getTasquesNoCompletades(auth) {
 
   // Obtenir tots els estutiants per cada tasca
   const tasquesNoCompletades = {};
-  for (const tasca of tasques) {
-    const respostaLliuraments = await classroom.courses.courseWork.studentSubmissions.list({
-      courseId,
-      courseWorkId: tasca.id,
-    });
-    const lliuraments = respostaLliuraments.data.studentSubmissions;
 
-    // Filtra les tasques que no estan entregades, les que no están retornades, les que no han estat corregides i les que no han passat la data de lliurament
-    const noCompletades = lliuraments.filter(submission =>
-      submission.state !== 'TURNED_IN' &&
-      submission.state !== 'RETURNED' &&
-      (!submission.stateHistory || !submission.stateHistory.some(state => state.state === 'GRADED')) &&
-      (!tasca.dueDate || Date.now() < new Date(tasca.dueDate).getTime()));
+  if (tasques) {
 
-    // Afegeix les tasques no entregades i els seus alumnes a l'objecte de resultats
-    if (noCompletades.length > 0) {
-      const respostaEstudiants = await classroom.courses.students.list({ courseId });
-      const estudiants = respostaEstudiants.data.students;
-      for (const lliurament of noCompletades) {
-        const estudiant = estudiants.find(estudiant => estudiant.userId === lliurament.userId);
-        if (!tasquesNoCompletades[tasca.title]) {
-          tasquesNoCompletades[tasca.title] = [];
-        }
-        if (estudiant && estudiant.profile.emailAddress) {
-          if (!tasquesNoCompletades[tasca.title].includes(estudiant.profile.emailAddress)) {
-            tasquesNoCompletades[tasca.title].push(estudiant.profile.emailAddress);
+    for (const tasca of tasques) {
+      const respostaLliuraments = await classroom.courses.courseWork.studentSubmissions.list({
+        courseId,
+        courseWorkId: tasca.id,
+      });
+      const lliuraments = respostaLliuraments.data.studentSubmissions;
+
+      // Filtra les tasques que no estan entregades, les que no están retornades, les que no han estat corregides i les que no han passat la data de lliurament
+      const noCompletades = lliuraments.filter(submission =>
+        submission.state !== 'TURNED_IN' &&
+        submission.state !== 'RETURNED' &&
+        (!submission.stateHistory || !submission.stateHistory.some(state => state.state === 'GRADED')) &&
+        (!tasca.dueDate || Date.now() < new Date(tasca.dueDate).getTime()));
+
+      // Afegeix les tasques no entregades i els seus alumnes a l'objecte de resultats
+      if (noCompletades.length > 0) {
+        const respostaEstudiants = await classroom.courses.students.list({ courseId });
+        const estudiants = respostaEstudiants.data.students;
+        for (const lliurament of noCompletades) {
+          const estudiant = estudiants.find(estudiant => estudiant.userId === lliurament.userId);
+          if (!tasquesNoCompletades[tasca.title]) {
+            tasquesNoCompletades[tasca.title] = [];
+          }
+          if (estudiant && estudiant.profile.emailAddress) {
+            if (!tasquesNoCompletades[tasca.title].includes(estudiant.profile.emailAddress)) {
+              tasquesNoCompletades[tasca.title].push(estudiant.profile.emailAddress);
+            }
           }
         }
       }
     }
+  } else {
+    debug("No hi ha cap tasca");
   }
 
   if (config["CHANNEL_ID"] != "") {
@@ -194,52 +200,57 @@ async function getQualificacio(auth, client) {
 
   // Recorre totes les tasques del curs "Discord" de google classroom
 
-  arrayTasques.forEach(async t => {
-    const lliuraments = await classroom.courses.courseWork.studentSubmissions.list({
-      courseId: courseId,
-      courseWorkId: t.id
-    });
+  if (arrayTasques) {
 
-    if (data["submissions"][t.id] == undefined) {
-      data["submissions"][t.id] = {};
-    }
-
-    escriureDataUsersDiscordJson(data);
-
-    // Recorre totes les lliuraments de cada tasca
-
-    const dadesLliuramentsUsuaris = lliuraments.data.studentSubmissions;
-
-    await dadesLliuramentsUsuaris.forEach(async s => {
-      const lliurament = await classroom.courses.courseWork.studentSubmissions.get({
+    arrayTasques.forEach(async t => {
+      const lliuraments = await classroom.courses.courseWork.studentSubmissions.list({
         courseId: courseId,
-        courseWorkId: t.id,
-        id: s.id
+        courseWorkId: t.id
       });
 
-      const dadesLliurament = lliurament.data;
-
-      // Obtenir les dades de l'estudiant
-
-      const estudiant = await classroom.courses.students.get({
-        courseId: courseId,
-        userId: dadesLliurament.userId
-      });
-
-      const dadesEstudiant = estudiant.data;
-
-      // Si l'estudiant no ha entregat la tasca, no s'envia cap nota, però s'afegeix a la base de dades, per si l'estudiant la entrega després, que s'enviï la nota, i no s'enviï una nota repetida
-
-      if (data["submissions"][t.id][s.id] == undefined) {
-        data["submissions"][t.id][s.id] = {};
-        if (dadesLliurament.assignedGrade != undefined) {
-          enviarNota(client, dadesEstudiant.profile.emailAddress, t.title, dadesEstudiant.profile.name.fullName, dadesLliurament.assignedGrade);
-        }
+      if (data["submissions"][t.id] == undefined) {
+        data["submissions"][t.id] = {};
       }
-      data["submissions"][t.id][s.id] = dadesLliurament.assignedGrade;
+
       escriureDataUsersDiscordJson(data);
+
+      // Recorre totes les lliuraments de cada tasca
+
+      const dadesLliuramentsUsuaris = lliuraments.data.studentSubmissions;
+
+      await dadesLliuramentsUsuaris.forEach(async s => {
+        const lliurament = await classroom.courses.courseWork.studentSubmissions.get({
+          courseId: courseId,
+          courseWorkId: t.id,
+          id: s.id
+        });
+
+        const dadesLliurament = lliurament.data;
+
+        // Obtenir les dades de l'estudiant
+
+        const estudiant = await classroom.courses.students.get({
+          courseId: courseId,
+          userId: dadesLliurament.userId
+        });
+
+        const dadesEstudiant = estudiant.data;
+
+        // Si l'estudiant no ha entregat la tasca, no s'envia cap nota, però s'afegeix a la base de dades, per si l'estudiant la entrega després, que s'enviï la nota, i no s'enviï una nota repetida
+
+        if (data["submissions"][t.id][s.id] == undefined) {
+          data["submissions"][t.id][s.id] = {};
+          if (dadesLliurament.assignedGrade != undefined) {
+            enviarNota(client, dadesEstudiant.profile.emailAddress, t.title, dadesEstudiant.profile.name.fullName, dadesLliurament.assignedGrade);
+          }
+        }
+        data["submissions"][t.id][s.id] = dadesLliurament.assignedGrade;
+        escriureDataUsersDiscordJson(data);
+      });
     });
-  });
+  } else {
+    debug("No hi ha cap tasca");
+  }
 }
 
 module.exports = {
